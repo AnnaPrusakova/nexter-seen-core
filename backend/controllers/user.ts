@@ -1,3 +1,4 @@
+import {Request, Response } from "express";
 const { User, validate } = require("../models/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -21,7 +22,7 @@ const createTransporter = async () => {
     });
 
     const accessToken = await new Promise((resolve, reject) => {
-        oauth2Client.getAccessToken((err, token) => {
+        oauth2Client.getAccessToken((err: Error, token: string) => {
             if (err) {
                 reject();
             }
@@ -44,7 +45,7 @@ const createTransporter = async () => {
     return Transport;
 };
 
-const sendEmail = async ({ email, username, res }) => {
+const sendEmail = async ({ email, username, res }: { email: string, username: string, res: Response}) => {
     // Create a unique confirmation token
     const confirmationToken = encrypt(username);
     const apiUrl = process.env.API_URL || "http://0.0.0.0:4000";
@@ -57,11 +58,11 @@ const sendEmail = async ({ email, username, res }) => {
         from: "Educative Fullstack Course",
         to: email,
         subject: "Email Confirmation",
-        html: `Press the following link to verify your email: <a href=${apiUrl}/confirmation/${confirmationToken}>Verification Link</a>`,
+        html: `Press the following link to verify your email: <a href=${apiUrl}/verify/${confirmationToken}>Verification Link</a>`,
     };
 
     // Send the email
-    Transport.sendMail(mailOptions, function (error, response) {
+    Transport.sendMail(mailOptions, function (error: Error, response: any) {
         if (error) {
             res.status(400).send(error);
         } else {
@@ -72,7 +73,7 @@ const sendEmail = async ({ email, username, res }) => {
     });
 };
 
-exports.verifyEmail = async (req, res) => {
+exports.verifyEmail = async (req: Request, res: Response) => {
     try {
         // Get the confirmation token
         const { confirmationToken } = req.params;
@@ -101,7 +102,7 @@ exports.verifyEmail = async (req, res) => {
     }
 };
 
-exports.signup = async (req, res) => {
+exports.signup = async (req: Request, res: Response) => {
     try {
         const { error } = validate(req.body);
         if (error) return res.status(400).send(error.details[0].message);
@@ -120,7 +121,7 @@ exports.signup = async (req, res) => {
         const salt = await bcrypt.genSalt(Number(process.env.SALT));
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        let user = await User.create({
+        const user = await User.create({
             firstName,
             lastName,
             username,

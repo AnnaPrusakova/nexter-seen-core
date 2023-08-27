@@ -2,9 +2,9 @@ const crypto = require("crypto");
 
 const algorithm = process.env.CRYPTO_ALGORITHM;
 const secretKey = process.env.CONFIRMATION_SECRET_KEY;
-const iv = process.env.INITIALIZATION_VECTOR;
+const iv = process.env.INITIALIZATION_VECTOR as string;
 
-const encrypt = (token) => {
+const encrypt = (token: string) => {
     const cipher = crypto.createCipheriv(
         algorithm,
         secretKey,
@@ -16,7 +16,7 @@ const encrypt = (token) => {
     return encrypted.toString("hex");
 };
 
-const decrypt = (hash) => {
+const decrypt = (hash: string) => {
     const decipher = crypto.createDecipheriv(
         algorithm,
         secretKey,

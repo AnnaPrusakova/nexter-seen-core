@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("user", userSchema);
 
-const validate = (user) => {
+const validate = (user: any) => {
     const schema = Joi.object({
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),

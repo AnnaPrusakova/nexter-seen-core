@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
-const { MONGO_URI } = process.env;
+const MONGO_URI = process.env.MONGO_URI as string;
 
 exports.connect = () => {
     mongoose
@@ -8,7 +8,7 @@ exports.connect = () => {
         .then(() => {
             console.log("connected to database successfully...");
         })
-        .catch((error) => {
+        .catch((error: Error) => {
             console.log(
                 "failed to connect to the database. terminating the application..."
             );

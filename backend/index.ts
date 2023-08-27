@@ -1,7 +1,8 @@
+import express from "express";
+
 require("dotenv").config();
-require("./database/database.js").connect();
-const express = require("express");
-const router = require("./routes/index");
+require("./database/database.ts").connect();
+const router = require("./routes");
 
 const app = express();
 const port = process.env.PORT || 5000;
