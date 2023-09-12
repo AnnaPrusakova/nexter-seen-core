@@ -1,11 +1,14 @@
 import { Request, Response } from 'express';
 
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const nodemailer = require('nodemailer');
-const { google } = require('googleapis');
-const { encrypt, decrypt } = require('../utils/confirmation.ts');
-const { User, validate } = require('../models/user.ts');
+import { User, validate } from '../models/user';
+
+import { decrypt, encrypt } from '../utils/confirmation';
+
+import { google } from 'googleapis';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+
+import nodemailer from 'nodemailer';
 
 const { OAuth2 } = google.auth;
 
@@ -24,27 +27,27 @@ const createTransporter = async () => {
 	});
 
 	const accessToken = await new Promise((resolve, reject) => {
-		oauth2Client.getAccessToken((err: Error, token: string) => {
-			if (err) {
-				reject();
+		oauth2Client.getAccessToken(
+			(err: any, token: string | null | undefined) => {
+				if (err) {
+					reject();
+				}
+				resolve(token);
 			}
-			resolve(token);
-		});
+		);
 	});
 
-	const Transport = nodemailer.createTransport({
+	return nodemailer.createTransport({
 		service: 'gmail',
 		auth: {
 			type: 'OAuth2',
 			user: 'nexterseen@gmail.com',
-			accessToken,
+			accessToken: accessToken || '',
 			clientId: `${OAUTH_CLIENT_ID}`,
 			clientSecret: `${OAUTH_CLIENT_SECRET}`,
 			refreshToken: `${OAUTH_REFRESH_TOKEN}`
 		}
-	});
-
-	return Transport;
+	} as nodemailer.TransportOptions);
 };
 
 const sendEmail = async ({
@@ -73,7 +76,7 @@ const sendEmail = async ({
 	};
 
 	// Send the email
-	Transport.sendMail(mailOptions, (error: Error, response: any) => {
+	Transport.sendMail(mailOptions, (error: any, _: any) => {
 		if (error) {
 			res.status(400).send(error);
 		} else {
@@ -84,7 +87,7 @@ const sendEmail = async ({
 	});
 };
 
-exports.verifyEmail = async (req: Request, res: Response) => {
+const verifyEmail = async (req: Request, res: Response) => {
 	try {
 		// Get the confirmation token
 		const { confirmationToken } = req.params;
@@ -113,7 +116,7 @@ exports.verifyEmail = async (req: Request, res: Response) => {
 	}
 };
 
-exports.signup = async (req: Request, res: Response) => {
+const signup = async (req: Request, res: Response) => {
 	try {
 		const { error } = validate(req.body);
 		if (error) return res.status(400).send(error.details[0].message);
@@ -121,6 +124,7 @@ exports.signup = async (req: Request, res: Response) => {
 		const { firstName, lastName, username, email, password } = req.body;
 
 		const emailExists = await User.findOne({ email, username });
+		console.log('email', emailExists);
 		const usernameExists = await User.findOne({ username });
 		if (emailExists) {
 			return res.status(409).send('Email Already Exist. Please Login');
@@ -140,17 +144,17 @@ exports.signup = async (req: Request, res: Response) => {
 			password: hashedPassword
 		});
 
-		const token = jwt.sign(
+		user.token = jwt.sign(
 			{ userId: user._id, email },
-			process.env.TOKEN_SECRET_KEY,
+			process.env.TOKEN_SECRET_KEY ? process.env.TOKEN_SECRET_KEY : '',
 			{
 				expiresIn: '2h'
 			}
 		);
-		user.token = token;
 
 		return sendEmail({ email, username, res });
 	} catch (err) {
 		console.error(err);
 	}
 };
+export { verifyEmail, signup };

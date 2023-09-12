@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Joi = require('joi');
+import mongoose from 'mongoose';
+import Joi from 'joi';
 
 const userSchema = new mongoose.Schema({
 	firstName: { type: String, default: null },
@@ -24,4 +24,4 @@ const validate = (user: any) => {
 	return schema.validate(user);
 };
 
-module.exports = { User, validate };
+export { User, validate };

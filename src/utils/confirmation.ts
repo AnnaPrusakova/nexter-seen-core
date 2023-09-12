@@ -1,7 +1,7 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-const algorithm = process.env.CRYPTO_ALGORITHM;
-const secretKey = process.env.CONFIRMATION_SECRET_KEY;
+const algorithm = process.env.CRYPTO_ALGORITHM || '';
+const secretKey = process.env.CONFIRMATION_SECRET_KEY || '';
 const iv = process.env.INITIALIZATION_VECTOR as string;
 
 const encrypt = (token: string) => {
@@ -31,7 +31,4 @@ const decrypt = (hash: string) => {
 	return decrypted.toString();
 };
 
-module.exports = {
-	encrypt,
-	decrypt
-};
+export { encrypt, decrypt };
