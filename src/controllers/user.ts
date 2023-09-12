@@ -10,6 +10,8 @@ import bcrypt from 'bcrypt';
 
 import nodemailer from 'nodemailer';
 
+require('dotenv').config();
+
 const { OAuth2 } = google.auth;
 
 const { OAUTH_REFRESH_TOKEN } = process.env;
@@ -21,7 +23,6 @@ const createTransporter = async () => {
 		`${OAUTH_CLIENT_SECRET}`,
 		'https://developers.google.com/oauthplayground'
 	);
-
 	oauth2Client.setCredentials({
 		refresh_token: `${OAUTH_REFRESH_TOKEN}`
 	});
@@ -38,7 +39,7 @@ const createTransporter = async () => {
 	});
 
 	return nodemailer.createTransport({
-		service: 'gmail',
+		service: 'Gmail',
 		auth: {
 			type: 'OAuth2',
 			user: 'nexterseen@gmail.com',
@@ -61,11 +62,9 @@ const sendEmail = async ({
 }) => {
 	// Create a unique confirmation token
 	const confirmationToken = encrypt(username);
-	const apiUrl = process.env.API_URL || 'http://0.0.0.0:4000';
-
+	const apiUrl = process.env.FRONT_API_URL || 'http://0.0.0.0:4000';
 	// Initialize the Nodemailer with your Gmail credentials
 	const Transport = await createTransporter();
-
 	// Configure the email options
 	const mailOptions = {
 		from: 'Educative Fullstack Course',
@@ -123,8 +122,7 @@ const signup = async (req: Request, res: Response) => {
 
 		const { firstName, lastName, username, email, password } = req.body;
 
-		const emailExists = await User.findOne({ email, username });
-		console.log('email', emailExists);
+		const emailExists = await User.findOne({ email });
 		const usernameExists = await User.findOne({ username });
 		if (emailExists) {
 			return res.status(409).send('Email Already Exist. Please Login');
@@ -146,7 +144,7 @@ const signup = async (req: Request, res: Response) => {
 
 		user.token = jwt.sign(
 			{ userId: user._id, email },
-			process.env.TOKEN_SECRET_KEY ? process.env.TOKEN_SECRET_KEY : '',
+			process.env.TOKEN_SECRET_KEY || '',
 			{
 				expiresIn: '2h'
 			}

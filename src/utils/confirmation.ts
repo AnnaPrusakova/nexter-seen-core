@@ -1,9 +1,9 @@
 import crypto from 'crypto';
+require('dotenv').config();
 
-const algorithm = process.env.CRYPTO_ALGORITHM || '';
-const secretKey = process.env.CONFIRMATION_SECRET_KEY || '';
+const algorithm = process.env.CRYPTO_ALGORITHM as string;
+const secretKey = process.env.CONFIRMATION_SECRET_KEY as string;
 const iv = process.env.INITIALIZATION_VECTOR as string;
-
 const encrypt = (token: string) => {
 	const cipher = crypto.createCipheriv(
 		algorithm,
